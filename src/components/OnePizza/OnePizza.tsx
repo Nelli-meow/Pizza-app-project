@@ -5,9 +5,10 @@ interface Props {
   name: string,
   price: number,
   image: string,
+  onClick: () => void,
 }
 
-const OnePizza: React.FC<Props> = ({name, image, price}) => {
+const OnePizza: React.FC<Props> = ({name, image, price, onClick}) => {
   return (
     <Card.Root
       maxW="sm"
@@ -37,6 +38,7 @@ const OnePizza: React.FC<Props> = ({name, image, price}) => {
             color: 'orange.400',
           }}
           borderRadius="md"
+          onClick={onClick}
         >
           Добавить в корзину
         </Button>

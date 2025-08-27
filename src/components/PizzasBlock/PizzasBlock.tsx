@@ -1,7 +1,21 @@
-import { Container, SimpleGrid, Text } from '@chakra-ui/react';
+import {
+  Button,
+  CloseButton,
+  Container,
+  Dialog,
+  Portal,
+  SimpleGrid,
+  Text,
+  Checkbox,
+  VStack,
+  NumberInput,
+  HStack, IconButton
+} from '@chakra-ui/react';
 import OnePizza from '../OnePizza/OnePizza.tsx';
 import pizzaImg from '../../assets/domashnyaya-pitstsa_11.jpg';
 import { useState } from 'react';
+import type { Pizza } from '../../types';
+import { LuMinus, LuPlus } from 'react-icons/lu';
 
 const pizzasArr = [
   {
@@ -118,7 +132,39 @@ const pizzasArr = [
 
 
 const PizzasBlock = () => {
-  const [pizzas, setPizzas] = useState(pizzasArr);
+  const [pizzas] = useState<Pizza[]>(pizzasArr);
+  const [selectedPizza, setSelectedPizza] = useState<Pizza | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const [extrasCount, setExtrasCount] = useState<Record<string, number>>({});
+
+  const handleAddToCart = (pizza: Pizza) => {
+    setSelectedPizza(pizza);
+    setIsOpen(true);
+    console.log(pizza);
+  };
+
+  const handleClose = () => {
+    setIsOpen(false);
+    setSelectedPizza(null);
+    setExtrasCount({});
+  };
+
+  const changeExtrasCount = (name: string, sumExtra: number) => {
+    setExtrasCount(prevState => ({
+      ...prevState,
+      [name]: Math.max(0, (prevState[name] || 0) + sumExtra),
+    }));
+  };
+
+
+  const totalPrice = selectedPizza
+    ? selectedPizza.price + selectedPizza.extras.reduce(
+    (sum, extra) => sum + (extrasCount[extra.name] || 0) * extra.price,
+    0
+  )
+    : 0;
+
 
   return (
     <Container mt={20} p="10" bg="white" borderRadius="xl">
@@ -131,9 +177,72 @@ const PizzasBlock = () => {
             name={pizza.name}
             price={pizza.price}
             image={pizza.image}
+            onClick={() => handleAddToCart(pizza)}
           />
         ))}
       </SimpleGrid>
+
+      {isOpen && selectedPizza && (
+        <Dialog.Root open={isOpen} onOpenChange={handleClose}>
+          <Portal>
+            <Dialog.Backdrop />
+            <Dialog.Positioner>
+              <Dialog.Content>
+                <Dialog.Header>
+                  <Dialog.Title>{selectedPizza.name}</Dialog.Title>
+                </Dialog.Header>
+
+                <Dialog.Body>
+                  <Text mt={2} mb={4} fontWeight="bold">Добавить ополнительно:</Text>
+                  <VStack align="start" mt={2}>
+                    {selectedPizza.extras.map(extra => (
+                      <Checkbox.Root key={extra.name} css={{ width: '100%' }} >
+                        <Checkbox.HiddenInput />
+                        <Checkbox.Control />
+                        <HStack justifyContent="space-between" alignItems="center" width="100%">
+                          <Checkbox.Label fontSize={15}>
+                            {extra.name} - {extra.price} руб
+                          </Checkbox.Label>
+
+                          <NumberInput.Root defaultValue="0" min={0} unstyled spinOnPress={false}>
+                            <HStack gap="2">
+                              <NumberInput.DecrementTrigger asChild>
+                                <IconButton variant="outline" size="sm" onClick={() => changeExtrasCount(extra.name, -1)}>
+                                  <LuMinus />
+                                </IconButton>
+                              </NumberInput.DecrementTrigger>
+                              <NumberInput.ValueText textAlign="center" fontSize="lg" minW="3ch" />
+                              <NumberInput.IncrementTrigger asChild>
+                                <IconButton variant="outline" size="sm" onClick={() => changeExtrasCount(extra.name, 1)}>
+                                  <LuPlus />
+                                </IconButton>
+                              </NumberInput.IncrementTrigger>
+                            </HStack>
+                          </NumberInput.Root>
+                        </HStack>
+                      </Checkbox.Root>
+                    ))}
+                  </VStack>
+                  <Text mt='5' fontSize={20}> Цена: {totalPrice} руб</Text>
+                </Dialog.Body>
+
+                <Dialog.Footer>
+                  <Dialog.ActionTrigger asChild>
+                    <Button variant="outline" onClick={handleClose}>
+                      Отмена
+                    </Button>
+                  </Dialog.ActionTrigger>
+                  <Button colorScheme="orange">В корзину</Button>
+                </Dialog.Footer>
+
+                <Dialog.CloseTrigger asChild>
+                  <CloseButton size="sm" />
+                </Dialog.CloseTrigger>
+              </Dialog.Content>
+            </Dialog.Positioner>
+          </Portal>
+        </Dialog.Root>
+      )}
     </Container>
   );
 };
