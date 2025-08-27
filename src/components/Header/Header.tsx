@@ -3,17 +3,23 @@ import { FaShoppingCart } from 'react-icons/fa';
 
 const Header = () => {
   return (
-    <Box bgColor="orange.200" color="white" p="5" boxShadow="md">
+    <Box
+      bgColor="orange.200"
+      color="white"
+      p="5"
+      borderBottom="2px solid"
+      borderColor="orange.400"
+    >
       <Container maxW="container.xl">
         <Flex alignItems="center">
           <Heading fontFamily="'Figtree', sans-serif" color="black" fontSize="xl">
             PizzaTime 🍕
           </Heading>
 
-          <Spacer />
+          <Spacer/>
 
           <Flex gap="4">
-            <Button bg="green.400" color="white" _hover={{ bg: 'green.500' }}>
+            <Button bg="orange.500" color="white" _hover={{bg: 'orange.600'}}>
               Корзина
               <FaShoppingCart/>
             </Button>
