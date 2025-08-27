@@ -16,6 +16,7 @@ const OnePizza: React.FC<Props> = ({name, image, price, onClick}) => {
       transition="transform 0.3s, box-shadow 0.3s"
       _hover={{transform: 'scale(1.01)', boxShadow: 'sm'}}
       bg="gray.200"
+      borderColor="gray.300"
     >
       <Image
         src={image}

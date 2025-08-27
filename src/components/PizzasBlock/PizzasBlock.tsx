@@ -16,6 +16,7 @@ import pizzaImg from '../../assets/domashnyaya-pitstsa_11.jpg';
 import { useState } from 'react';
 import type { Pizza } from '../../types';
 import { LuMinus, LuPlus } from 'react-icons/lu';
+import { toast } from 'react-toastify';
 
 const pizzasArr = [
   {
@@ -144,6 +145,41 @@ const PizzasBlock = () => {
     console.log(pizza);
   };
 
+  const handleAddToCartClick = () => {
+    if (!selectedPizza) return;
+
+    const pizzaWithExtras = {
+      name: selectedPizza.name,
+      basePrice: selectedPizza.price,
+      extras: selectedPizza.extras.map(extra => ({
+        name: extra.name,
+        price: extra.price,
+        count: extrasCount[extra.name] || 0
+      })),
+      totalPrice: totalPrice
+    };
+
+    let cart;
+    try {
+      const stored = localStorage.getItem('cart');
+      cart = stored ? JSON.parse(stored) : [];
+      if (!Array.isArray(cart)) {
+        cart = [];
+      }
+    } catch (err) {
+      console.log(err);
+    }
+
+    cart.push(pizzaWithExtras);
+
+    localStorage.setItem('cart', JSON.stringify(cart));
+    window.dispatchEvent(new Event('cartUpdated'));
+
+    toast.success('Пицца добавлена в корзину!');
+
+    handleClose();
+  };
+
   const handleClose = () => {
     setIsOpen(false);
     setSelectedPizza(null);
@@ -168,7 +204,7 @@ const PizzasBlock = () => {
 
   return (
     <Container mt={20} p="10" bg="white" borderRadius="xl">
-      <Text textAlign="center" fontSize="40px" color="orange.600" mb={20}>Menu</Text>
+      <Text textAlign="center" fontSize="40px" color="orange.600" mb={20}>Меню</Text>
 
       <SimpleGrid columns={[2, null, 3]} gap="40px">
         {pizzas.map(pizza => (
@@ -185,7 +221,7 @@ const PizzasBlock = () => {
       {isOpen && selectedPizza && (
         <Dialog.Root open={isOpen} onOpenChange={handleClose}>
           <Portal>
-            <Dialog.Backdrop />
+            <Dialog.Backdrop/>
             <Dialog.Positioner>
               <Dialog.Content>
                 <Dialog.Header>
@@ -196,9 +232,12 @@ const PizzasBlock = () => {
                   <Text mt={2} mb={4} fontWeight="bold">Добавить ополнительно:</Text>
                   <VStack align="start" mt={2}>
                     {selectedPizza.extras.map(extra => (
-                      <Checkbox.Root key={extra.name} css={{ width: '100%' }} >
-                        <Checkbox.HiddenInput />
-                        <Checkbox.Control />
+                      <Checkbox.Root
+                        key={extra.name}
+                        css={{width: '100%'}}
+                        >
+                        <Checkbox.HiddenInput/>
+                        <Checkbox.Control/>
                         <HStack justifyContent="space-between" alignItems="center" width="100%">
                           <Checkbox.Label fontSize={15}>
                             {extra.name} - {extra.price} руб
@@ -207,14 +246,16 @@ const PizzasBlock = () => {
                           <NumberInput.Root defaultValue="0" min={0} unstyled spinOnPress={false}>
                             <HStack gap="2">
                               <NumberInput.DecrementTrigger asChild>
-                                <IconButton variant="outline" size="sm" onClick={() => changeExtrasCount(extra.name, -1)}>
-                                  <LuMinus />
+                                <IconButton variant="outline" size="sm"
+                                            onClick={() => changeExtrasCount(extra.name, -1)}>
+                                  <LuMinus/>
                                 </IconButton>
                               </NumberInput.DecrementTrigger>
-                              <NumberInput.ValueText textAlign="center" fontSize="lg" minW="3ch" />
+                              <NumberInput.ValueText textAlign="center" fontSize="lg" minW="3ch"/>
                               <NumberInput.IncrementTrigger asChild>
-                                <IconButton variant="outline" size="sm" onClick={() => changeExtrasCount(extra.name, 1)}>
-                                  <LuPlus />
+                                <IconButton variant="outline" size="sm"
+                                            onClick={() => changeExtrasCount(extra.name, 1)}>
+                                  <LuPlus/>
                                 </IconButton>
                               </NumberInput.IncrementTrigger>
                             </HStack>
@@ -223,7 +264,7 @@ const PizzasBlock = () => {
                       </Checkbox.Root>
                     ))}
                   </VStack>
-                  <Text mt='5' fontSize={20}> Цена: {totalPrice} руб</Text>
+                  <Text mt="5" fontSize={20}> Цена: {totalPrice} руб</Text>
                 </Dialog.Body>
 
                 <Dialog.Footer>
@@ -232,11 +273,11 @@ const PizzasBlock = () => {
                       Отмена
                     </Button>
                   </Dialog.ActionTrigger>
-                  <Button colorScheme="orange">В корзину</Button>
+                  <Button colorScheme="orange" onClick={handleAddToCartClick}>В корзину</Button>
                 </Dialog.Footer>
 
                 <Dialog.CloseTrigger asChild>
-                  <CloseButton size="sm" />
+                  <CloseButton size="sm"/>
                 </Dialog.CloseTrigger>
               </Dialog.Content>
             </Dialog.Positioner>
