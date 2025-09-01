@@ -17,3 +17,10 @@ export interface IPizza {
   extras: Extra[];
   totalPrice: number;
 }
+
+export interface Client {
+  name: string;
+  phone: string;
+  address: string;
+  comment?: string;
+}
