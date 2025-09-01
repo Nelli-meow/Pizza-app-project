@@ -49,7 +49,17 @@ const Stepper: React.FC<StepperProps> = ({isOpen, onClose}) => {
 
   const inputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const {name, value} = e.target;
-    setClient((prev) => ({...prev, [name]: value}));
+    if (name === 'phone') {
+      const digits = value.replace(/\D/g, '').substring(0, 11);
+      let formatted = '+7';
+      if (digits.length > 1) formatted += ` (${digits.substring(1,4)}`;
+      if (digits.length >= 4) formatted += `) ${digits.substring(4,7)}`;
+      if (digits.length >= 7) formatted += `-${digits.substring(7,9)}`;
+      if (digits.length >= 9) formatted += `-${digits.substring(9,11)}`;
+      setClient(prev => ({ ...prev, phone: formatted }));
+    } else {
+      setClient(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const nextStep = () => {

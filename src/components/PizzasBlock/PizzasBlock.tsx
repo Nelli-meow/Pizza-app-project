@@ -142,7 +142,6 @@ const PizzasBlock = () => {
   const handleAddToCart = (pizza: Pizza) => {
     setSelectedPizza(pizza);
     setIsOpen(true);
-    console.log(pizza);
   };
 
   const handleAddToCartClick = () => {
