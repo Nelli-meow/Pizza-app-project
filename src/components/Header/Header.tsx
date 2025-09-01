@@ -3,8 +3,6 @@ import { FaShoppingCart } from 'react-icons/fa';
 import { useEffect, useState } from 'react';
 import Stepper from '../Stepper/Stepper.tsx';
 
-
-
 const Header = () => {
   const [cartCount, setCartCount] = useState(0);
   const [isStepperOpen, setIsStepperOpen] = useState(false);

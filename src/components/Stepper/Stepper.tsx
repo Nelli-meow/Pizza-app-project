@@ -14,6 +14,7 @@ import {
 import type { Client, Extra, IPizza } from '../../types';
 import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
+import { steps, getClientFromStorage, saveClientToStorage, clearClientFromStorage } from '../../dictionary';
 
 interface StepperProps {
   isOpen: boolean;
@@ -22,7 +23,7 @@ interface StepperProps {
 
 const initialState: Client = {
   name: '',
-  phone: '',
+  phone: '+7',
   address: '',
   comment: ''
 };
@@ -30,8 +31,7 @@ const initialState: Client = {
 const Stepper: React.FC<StepperProps> = ({isOpen, onClose}) => {
   const cart: IPizza[] = JSON.parse(localStorage.getItem('cart') || '[]');
   const total = cart.reduce((sum: number, item: IPizza) => sum + item.totalPrice, 0);
-  const [client, setClient] = useState<Client>({...initialState});
-
+  const [client, setClient] = useState<Client>(() => getClientFromStorage());
   const savedStep = Number(sessionStorage.getItem('currentStep')) || 0;
   const [step, setStep] = useState(savedStep);
 
@@ -39,24 +39,52 @@ const Stepper: React.FC<StepperProps> = ({isOpen, onClose}) => {
     sessionStorage.setItem('currentStep', step.toString());
   }, [step]);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (client.name || client.phone !== '+7' || client.address || client.comment) {
+      saveClientToStorage(client);
+    }
+  }, [client]);
 
-  const steps = [
-    {title: 'Шаг 1', description: 'Просмотр заказа'},
-    {title: 'Шаг 2', description: 'Ввод данных клиента'},
-    {title: 'Шаг 3', description: 'Подтверждение заказа'},
-  ];
+  if (!isOpen) return null;
 
   const inputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const {name, value} = e.target;
     if (name === 'phone') {
-      const digits = value.replace(/\D/g, '').substring(0, 11);
+      if (value.length < client.phone.length) {
+        if (!value.startsWith('+7')) {
+          setClient(prev => ({ ...prev, phone: '+7' }));
+          return;
+        }
+        setClient(prev => ({ ...prev, phone: value }));
+        return;
+      }
+      
+      const digits = value.replace(/[^\d]/g, '');
+      
+      if (digits.length === 0) {
+        setClient(prev => ({ ...prev, phone: '+7' }));
+        return;
+      }
+      
+      if (digits.length > 0 && !/^[78]/.test(digits)) {
+        return;
+      }
+      
+      const limitedDigits = digits.substring(0, 11);
+      
       let formatted = '+7';
-      if (digits.length > 1) formatted += ` (${digits.substring(1,4)}`;
-      if (digits.length >= 4) formatted += `) ${digits.substring(4,7)}`;
-      if (digits.length >= 7) formatted += `-${digits.substring(7,9)}`;
-      if (digits.length >= 9) formatted += `-${digits.substring(9,11)}`;
+      if (limitedDigits.length > 1) formatted += ` (${limitedDigits.substring(1,4)}`;
+      if (limitedDigits.length >= 4) formatted += `) ${limitedDigits.substring(4,7)}`;
+      if (limitedDigits.length >= 7) formatted += `-${limitedDigits.substring(7,9)}`;
+      if (limitedDigits.length >= 9) formatted += `-${limitedDigits.substring(9,11)}`;
+      
       setClient(prev => ({ ...prev, phone: formatted }));
+    } else if (name === 'name') {
+      const cyrillicRegex = /^[а-яёА-ЯЁ\s-]*$/;
+
+      if (cyrillicRegex.test(value)) {
+        setClient(prev => ({ ...prev, [name]: value }));
+      }
     } else {
       setClient(prev => ({ ...prev, [name]: value }));
     }
@@ -66,6 +94,24 @@ const Stepper: React.FC<StepperProps> = ({isOpen, onClose}) => {
     if (step === 1) {
       if (!client.name || !client.phone || !client.address) {
         toast.error('Пожалуйста, заполните все обязательные поля!');
+        return;
+      }
+
+      const cyrillicRegex = /^[а-яёА-ЯЁ\s-]+$/;
+      if (!cyrillicRegex.test(client.name)) {
+        toast.error('Имя должно содержать только русские буквы!');
+        return;
+      }
+
+      const digits = client.phone.replace(/\D/g, '');
+      if (digits.length < 11) {
+        toast.error('Пожалуйста, введите полный номер телефона!');
+        return;
+      }
+
+      const phoneRegex = /^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/;
+      if (!phoneRegex.test(client.phone)) {
+        toast.error('Пожалуйста, введите корректный российский номер телефона!');
         return;
       }
     }
@@ -97,6 +143,8 @@ const Stepper: React.FC<StepperProps> = ({isOpen, onClose}) => {
       setStep(0);
       sessionStorage.removeItem('currentStep');
       setClient({...initialState});
+      
+      clearClientFromStorage();
 
       toast.success('Заказ успешно оформлен!');
       onClose();
@@ -118,6 +166,7 @@ const Stepper: React.FC<StepperProps> = ({isOpen, onClose}) => {
       justifyContent="center"
       alignItems="center"
       zIndex={999}
+      onClick={onClose}
     >
       <Box
         bg="white"
@@ -127,6 +176,7 @@ const Stepper: React.FC<StepperProps> = ({isOpen, onClose}) => {
         maxWidth="90%"
         maxHeight="90%"
         overflowY="auto"
+        onClick={(e) => e.stopPropagation()}
       >
         <Flex justify="flex-end" align="center" mb={4}>
           <CloseButton onClick={onClose} color="black" bgColor="white"/>
