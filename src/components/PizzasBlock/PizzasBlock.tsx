@@ -71,6 +71,7 @@ const PizzasBlock = () => {
     setIsOpen(false);
     setSelectedPizza(null);
     setExtrasCount({});
+    setExtrasChecked({});
   };
 
   const changeExtrasCount = (name: string, sumExtra: number) => {
@@ -82,15 +83,11 @@ const PizzasBlock = () => {
       };
     });
 
-    if (sumExtra > 0) {
+    const newCount = Math.max(0, (extrasCount[name] || 0) + sumExtra);
+    if (newCount === 0) {
+      setExtrasChecked(prev => ({ ...prev, [name]: false }));
+    } else if (newCount > 0 && !extrasChecked[name]) {
       setExtrasChecked(prev => ({ ...prev, [name]: true }));
-    }
-
-    if (sumExtra < 0) {
-      const newCount = Math.max(0, (extrasCount[name] || 0) + sumExtra);
-      if (newCount === 0) {
-        setExtrasChecked(prev => ({ ...prev, [name]: false }));
-      }
     }
   };
 
@@ -145,12 +142,20 @@ const PizzasBlock = () => {
                         <HStack key={extra.name} justifyContent="space-between" w="100%">
                           <Checkbox.Root
                             checked={checked}
-                            onCheckedChange={(isChecked) => {
-                              setExtrasChecked(prev => ({ ...prev, [extra.name]: !!isChecked }));
-                              setExtrasCount(prev => ({
-                                ...prev,
-                                [extra.name]: isChecked ? prev[extra.name] || 1 : 0
-                              }));
+                            onCheckedChange={() => {
+                              const newCheckedValue = !checked;
+                              setExtrasChecked(prev => ({ ...prev, [extra.name]: newCheckedValue }));
+                              if (newCheckedValue) {
+                                setExtrasCount(prev => ({
+                                  ...prev,
+                                  [extra.name]: 1
+                                }));
+                              } else {
+                                setExtrasCount(prev => ({
+                                  ...prev,
+                                  [extra.name]: 0
+                                }));
+                              }
                             }}
                             css={{ flex: 1 }}
                           >

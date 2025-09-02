@@ -17,6 +17,7 @@ export interface IPizza {
   image: string;
   extras: Extra[];
   totalPrice: number;
+  basePrice:? number;
 }
 
 export interface Client {

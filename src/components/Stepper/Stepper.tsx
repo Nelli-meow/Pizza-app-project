@@ -210,10 +210,10 @@ const Stepper: React.FC<StepperProps> = ({isOpen, onClose}) => {
                     justify="space-between"
                   >
                     <Box>
-                      <Heading size="sm" color="black" mb={1}>{item.name}</Heading>
+                      <Heading size="sm" color="black" mb={1}>{item.name} - {item.basePrice} руб</Heading>
                       {item.extras && item.extras.length > 0 && (
                         <Text fontSize="sm" color="gray.500">
-                          Дополнительно: {item.extras.map((extra: Extra) => extra.name + ' x ' + extra.count).join(', ')}
+                          Дополнительно: {item.extras.map((extra: Extra) => extra.name + ' ' +  extra.price + ' руб' + ' x ' + extra.count).join(', ')}
                         </Text>
                       )}
                     </Box>
