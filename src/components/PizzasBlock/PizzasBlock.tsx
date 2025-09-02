@@ -87,7 +87,7 @@ const PizzasBlock = () => {
     <Container mt={20} p="10" bg="white" borderRadius="xl">
       <Text textAlign="center" fontSize="40px" color="orange.600" mb={20}>Меню</Text>
 
-      <SimpleGrid columns={[2, null, 3]} gap="40px">
+      <SimpleGrid columns={[1, 2, 3]} gap="40px">
         {pizzas.map(pizza => (
           <OnePizza
             key={pizza.name}
@@ -104,12 +104,22 @@ const PizzasBlock = () => {
           <Portal>
             <Dialog.Backdrop/>
             <Dialog.Positioner>
-              <Dialog.Content>
+              <Dialog.Content
+                p={5}
+                borderRadius="md"
+                w={{base: '90%', sm: '500px'}}
+                maxW="90%"
+                maxH="90%"
+                overflowY="auto"
+                overflowX="hidden"
+              >
                 <Dialog.Header>
-                  <Dialog.Title>{selectedPizza.name}</Dialog.Title>
+                  <Dialog.Title fontSize={{base: 'lg', sm: 'xl'}}>
+                    {selectedPizza.name}
+                  </Dialog.Title>
                 </Dialog.Header>
 
-                <Dialog.Body>
+                <Dialog.Body px={{ base: 0, sm: 5 }} >
                   <Text mt={2} mb={4} fontWeight="bold">Добавить дополнительно:</Text>
                   <VStack align="start" mt={2}>
                     {selectedPizza.extras.map(extra => {
@@ -121,19 +131,19 @@ const PizzasBlock = () => {
                             onCheckedChange={checked => {
                               setExtrasCount(prev => {
                                 if (checked) {
-                                  return { ...prev, [extra.name]: prev[extra.name] || 1 };
+                                  return {...prev, [extra.name]: prev[extra.name] || 1};
                                 } else {
-                                  const newState = { ...prev };
+                                  const newState = {...prev};
                                   newState[extra.name] = 0;
                                   return newState;
                                 }
                               });
                             }}
-                            css={{ flex: 1 }}
+                            css={{flex: 1}}
                           >
-                            <Checkbox.HiddenInput />
-                            <Checkbox.Control />
-                            <Checkbox.Label fontSize={15} ml={2}>
+                            <Checkbox.HiddenInput/>
+                            <Checkbox.Control/>
+                            <Checkbox.Label fontSize={{base: 14, sm: 15}} ml={2} whiteSpace="normal">
                               {extra.name} - {extra.price} руб
                             </Checkbox.Label>
                           </Checkbox.Root>
@@ -151,11 +161,11 @@ const PizzasBlock = () => {
                                   size="sm"
                                   onClick={() => changeExtrasCount(extra.name, -1)}
                                 >
-                                  <LuMinus />
+                                  <LuMinus/>
                                 </IconButton>
                               </NumberInput.DecrementTrigger>
 
-                              <NumberInput.ValueText textAlign="center" fontSize="lg" minW="3ch" />
+                              <NumberInput.ValueText textAlign="center" fontSize="lg" minW="3ch"/>
 
                               <NumberInput.IncrementTrigger asChild>
                                 <IconButton
@@ -163,7 +173,7 @@ const PizzasBlock = () => {
                                   size="sm"
                                   onClick={() => changeExtrasCount(extra.name, 1)}
                                 >
-                                  <LuPlus />
+                                  <LuPlus/>
                                 </IconButton>
                               </NumberInput.IncrementTrigger>
                             </HStack>
@@ -172,7 +182,9 @@ const PizzasBlock = () => {
                       );
                     })}
                   </VStack>
-                  <Text mt="5" fontSize={20}> Цена: {totalPrice} руб</Text>
+                  <Text mt={5} fontSize={{ base: 18, sm: 20 }}>
+                    Цена: {totalPrice} руб
+                  </Text>
                 </Dialog.Body>
 
                 <Dialog.Footer>

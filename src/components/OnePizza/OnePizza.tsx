@@ -1,4 +1,4 @@
-import { Button, Card, Image, Text } from '@chakra-ui/react';
+import { Button, Card, Flex, Image, Text } from '@chakra-ui/react';
 import React from 'react';
 
 interface Props {
@@ -12,6 +12,8 @@ const OnePizza: React.FC<Props> = ({name, image, price, onClick}) => {
   return (
     <Card.Root
       maxW="sm"
+      w="100%"
+      h="100%"
       overflow="hidden"
       transition="transform 0.3s, box-shadow 0.3s"
       _hover={{transform: 'scale(1.01)', boxShadow: 'sm'}}
@@ -20,29 +22,45 @@ const OnePizza: React.FC<Props> = ({name, image, price, onClick}) => {
     >
       <Image
         src={image}
-        alt="Green double couch with wooden legs"
+        alt={name} w="100%" objectFit="cover"
       />
       <Card.Body gap="2">
-        <Card.Title color="black">{name}</Card.Title>
-        <Text textStyle="2xl" fontWeight="medium" letterSpacing="tight" color="black" mt="2">
+        <Card.Title
+          color="black"
+          fontSize={{base: 'md', sm: 'lg'}}
+        >
+          {name}
+        </Card.Title>
+        <Text
+          fontSize={{base: 'lg', sm: '2xl'}}
+          fontWeight="medium"
+          letterSpacing="tight"
+          color="black"
+          mt="2"
+        >
           {price} руб
         </Text>
       </Card.Body>
       <Card.Footer gap="2">
-        <Button
-          bg="orange.400"
-          color="white"
-          border="2px solid"
-          borderColor="orange.400"
-          _hover={{
-            bg: 'white',
-            color: 'orange.400',
-          }}
-          borderRadius="md"
-          onClick={onClick}
-        >
-          Добавить в корзину
-        </Button>
+        <Flex w="100%" justify="center">
+          <Button
+            w={{base: '100%', sm: 'auto'}}
+            bg="orange.400"
+            color="white"
+            border="2px solid"
+            borderColor="orange.400"
+            _hover={{
+              bg: 'white',
+              color: 'orange.400',
+            }}
+            borderRadius="md"
+            whiteSpace="normal"
+            textAlign="center"
+            onClick={onClick}
+          >
+            Добавить в корзину
+          </Button>
+        </Flex>
       </Card.Footer>
     </Card.Root>
   );

@@ -9,7 +9,7 @@ import {
   ButtonGroup,
   Input,
   VStack,
-  Textarea,
+  Textarea, useBreakpointValue,
 } from '@chakra-ui/react';
 import type { Client, Extra, IPizza } from '../../types';
 import React, { useEffect, useState } from 'react';
@@ -34,6 +34,7 @@ const Stepper: React.FC<StepperProps> = ({isOpen, onClose}) => {
   const [client, setClient] = useState<Client>(() => getClientFromStorage());
   const savedStep = Number(sessionStorage.getItem('currentStep')) || 0;
   const [step, setStep] = useState(savedStep);
+  const showStepTitle = useBreakpointValue({base: false, sm: true});
 
   useEffect(() => {
     sessionStorage.setItem('currentStep', step.toString());
@@ -52,47 +53,47 @@ const Stepper: React.FC<StepperProps> = ({isOpen, onClose}) => {
     if (name === 'phone') {
       if (value.length < client.phone.length) {
         if (!value.startsWith('+7')) {
-          setClient(prev => ({ ...prev, phone: '+7' }));
+          setClient(prev => ({...prev, phone: '+7'}));
           return;
         }
-        setClient(prev => ({ ...prev, phone: value }));
+        setClient(prev => ({...prev, phone: value}));
         return;
       }
-      
-      const digits = value.replace(/[^\d]/g, '');
-      
+
+      const digits = value.replace(/\D/g, '');
+
       if (digits.length === 0) {
-        setClient(prev => ({ ...prev, phone: '+7' }));
+        setClient(prev => ({...prev, phone: '+7'}));
         return;
       }
-      
+
       if (digits.length > 0 && !/^[78]/.test(digits)) {
         return;
       }
-      
+
       const limitedDigits = digits.substring(0, 11);
-      
+
       let formatted = '+7';
-      if (limitedDigits.length > 1) formatted += ` (${limitedDigits.substring(1,4)}`;
-      if (limitedDigits.length >= 4) formatted += `) ${limitedDigits.substring(4,7)}`;
-      if (limitedDigits.length >= 7) formatted += `-${limitedDigits.substring(7,9)}`;
-      if (limitedDigits.length >= 9) formatted += `-${limitedDigits.substring(9,11)}`;
-      
-      setClient(prev => ({ ...prev, phone: formatted }));
+      if (limitedDigits.length > 1) formatted += ` (${limitedDigits.substring(1, 4)}`;
+      if (limitedDigits.length >= 4) formatted += `) ${limitedDigits.substring(4, 7)}`;
+      if (limitedDigits.length >= 7) formatted += `-${limitedDigits.substring(7, 9)}`;
+      if (limitedDigits.length >= 9) formatted += `-${limitedDigits.substring(9, 11)}`;
+
+      setClient(prev => ({...prev, phone: formatted}));
     } else if (name === 'name') {
       const cyrillicRegex = /^[а-яёА-ЯЁ\s-]*$/;
 
       if (cyrillicRegex.test(value)) {
-        setClient(prev => ({ ...prev, [name]: value }));
+        setClient(prev => ({...prev, [name]: value}));
       }
     } else {
-      setClient(prev => ({ ...prev, [name]: value }));
+      setClient(prev => ({...prev, [name]: value}));
     }
   };
 
   const nextStep = () => {
     if (step === 1) {
-      const { name, phone, address } = client;
+      const {name, phone, address} = client;
       const digits = phone.replace(/\D/g, '');
       const cyrillicRegex = /^[а-яёА-ЯЁ\s-]+$/;
       const phoneRegex = /^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/;
@@ -105,7 +106,7 @@ const Stepper: React.FC<StepperProps> = ({isOpen, onClose}) => {
 
       if (error) {
         if (!toast.isActive('step-error')) {
-          toast.error(error, { toastId: 'step-error' });
+          toast.error(error, {toastId: 'step-error'});
         }
         return;
       }
@@ -136,7 +137,7 @@ const Stepper: React.FC<StepperProps> = ({isOpen, onClose}) => {
       setStep(0);
       sessionStorage.removeItem('currentStep');
       setClient({...initialState});
-      
+
       clearClientFromStorage();
 
       toast.success('Заказ успешно оформлен!');
@@ -165,9 +166,9 @@ const Stepper: React.FC<StepperProps> = ({isOpen, onClose}) => {
         bg="white"
         p={5}
         borderRadius="md"
-        minWidth="400px"
-        maxWidth="90%"
-        maxHeight="90%"
+        minW={{base: '90%', sm: '400px'}}
+        maxW="90%"
+        maxH="90%"
         overflowY="auto"
         onClick={(e) => e.stopPropagation()}
       >
@@ -183,8 +184,13 @@ const Stepper: React.FC<StepperProps> = ({isOpen, onClose}) => {
               <Steps.List mb={4}>
                 {steps.map((s, index) => (
                   <Steps.Item key={index} index={index} title={s.title}>
-                    <Steps.Indicator bgColor="orange.300" color="white" borderColor="orange.500"/>
-                    <Steps.Title color="black">{s.title}</Steps.Title>
+                    <Steps.Indicator bgColor="orange.300" color="white" borderColor="red.600"/>
+                    <Steps.Title
+                      color="black"
+                      display={showStepTitle ? 'block' : 'none'}
+                    >
+                      {s.title}
+                    </Steps.Title>
                     <Steps.Separator/>
                   </Steps.Item>
                 ))}
@@ -278,7 +284,7 @@ const Stepper: React.FC<StepperProps> = ({isOpen, onClose}) => {
                     color="white"
                     border="2px solid"
                     borderColor="orange.400"
-                    _hover={{ bg: 'white', color: 'orange.400' }}
+                    _hover={{bg: 'white', color: 'orange.400'}}
                     borderRadius="md"
                     onClick={prevStep}
                   >
@@ -288,7 +294,7 @@ const Stepper: React.FC<StepperProps> = ({isOpen, onClose}) => {
                   <Button
                     bg="green.700"
                     color="white"
-                    _hover={{ bg: 'green.600' }}
+                    _hover={{bg: 'green.600'}}
                     borderRadius="md"
                     onClick={confirmOrder}
                   >
@@ -302,7 +308,7 @@ const Stepper: React.FC<StepperProps> = ({isOpen, onClose}) => {
                     color="white"
                     border="2px solid"
                     borderColor="orange.400"
-                    _hover={{ bg: 'white', color: 'orange.400' }}
+                    _hover={{bg: 'white', color: 'orange.400'}}
                     borderRadius="md"
                     onClick={prevStep}
                     disabled={step === 0}
@@ -315,7 +321,7 @@ const Stepper: React.FC<StepperProps> = ({isOpen, onClose}) => {
                     color="white"
                     border="2px solid"
                     borderColor="orange.400"
-                    _hover={{ bg: 'white', color: 'orange.400' }}
+                    _hover={{bg: 'white', color: 'orange.400'}}
                     borderRadius="md"
                     onClick={nextStep}
                   >
