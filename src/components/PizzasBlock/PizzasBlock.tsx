@@ -9,7 +9,7 @@ import {
   Checkbox,
   VStack,
   NumberInput,
-  HStack, IconButton
+  HStack, IconButton,
 } from '@chakra-ui/react';
 import OnePizza from '../OnePizza/OnePizza.tsx';
 import { useState } from 'react';
@@ -112,38 +112,65 @@ const PizzasBlock = () => {
                 <Dialog.Body>
                   <Text mt={2} mb={4} fontWeight="bold">Добавить дополнительно:</Text>
                   <VStack align="start" mt={2}>
-                    {selectedPizza.extras.map(extra => (
-                      <Checkbox.Root
-                        key={extra.name}
-                        css={{width: '100%'}}
-                        >
-                        <Checkbox.HiddenInput/>
-                        <Checkbox.Control/>
-                        <HStack justifyContent="space-between" alignItems="center" width="100%">
-                          <Checkbox.Label fontSize={15}>
-                            {extra.name} - {extra.price} руб
-                          </Checkbox.Label>
+                    {selectedPizza.extras.map(extra => {
+                      const count = extrasCount[extra.name] || 0;
+                      return (
+                        <HStack key={extra.name} justifyContent="space-between" w="100%">
+                          <Checkbox.Root
+                            checked={count > 0}
+                            onCheckedChange={checked => {
+                              setExtrasCount(prev => {
+                                if (checked) {
+                                  return { ...prev, [extra.name]: prev[extra.name] || 1 };
+                                } else {
+                                  const newState = { ...prev };
+                                  newState[extra.name] = 0;
+                                  return newState;
+                                }
+                              });
+                            }}
+                            css={{ flex: 1 }}
+                          >
+                            <Checkbox.HiddenInput />
+                            <Checkbox.Control />
+                            <Checkbox.Label fontSize={15} ml={2}>
+                              {extra.name} - {extra.price} руб
+                            </Checkbox.Label>
+                          </Checkbox.Root>
 
-                          <NumberInput.Root defaultValue="0" min={0} unstyled spinOnPress={false}>
+                          <NumberInput.Root
+                            value={String(count)}
+                            min={0}
+                            unstyled
+                            spinOnPress={false}
+                          >
                             <HStack gap="2">
                               <NumberInput.DecrementTrigger asChild>
-                                <IconButton variant="outline" size="sm"
-                                            onClick={() => changeExtrasCount(extra.name, -1)}>
-                                  <LuMinus/>
+                                <IconButton
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => changeExtrasCount(extra.name, -1)}
+                                >
+                                  <LuMinus />
                                 </IconButton>
                               </NumberInput.DecrementTrigger>
-                              <NumberInput.ValueText textAlign="center" fontSize="lg" minW="3ch"/>
+
+                              <NumberInput.ValueText textAlign="center" fontSize="lg" minW="3ch" />
+
                               <NumberInput.IncrementTrigger asChild>
-                                <IconButton variant="outline" size="sm"
-                                            onClick={() => changeExtrasCount(extra.name, 1)}>
-                                  <LuPlus/>
+                                <IconButton
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => changeExtrasCount(extra.name, 1)}
+                                >
+                                  <LuPlus />
                                 </IconButton>
                               </NumberInput.IncrementTrigger>
                             </HStack>
                           </NumberInput.Root>
                         </HStack>
-                      </Checkbox.Root>
-                    ))}
+                      );
+                    })}
                   </VStack>
                   <Text mt="5" fontSize={20}> Цена: {totalPrice} руб</Text>
                 </Dialog.Body>

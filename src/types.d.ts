@@ -1,6 +1,7 @@
 export interface Extra {
   name: string;
   price: number;
+  count?: number;
 }
 
 export interface Pizza {

@@ -92,33 +92,26 @@ const Stepper: React.FC<StepperProps> = ({isOpen, onClose}) => {
 
   const nextStep = () => {
     if (step === 1) {
-      if (!client.name || !client.phone || !client.address) {
-        toast.error('Пожалуйста, заполните все обязательные поля!');
-        return;
-      }
-
+      const { name, phone, address } = client;
+      const digits = phone.replace(/\D/g, '');
       const cyrillicRegex = /^[а-яёА-ЯЁ\s-]+$/;
-      if (!cyrillicRegex.test(client.name)) {
-        toast.error('Имя должно содержать только русские буквы!');
-        return;
-      }
-
-      const digits = client.phone.replace(/\D/g, '');
-      if (digits.length < 11) {
-        toast.error('Пожалуйста, введите полный номер телефона!');
-        return;
-      }
-
       const phoneRegex = /^\+7 \(\d{3}\) \d{3}-\d{2}-\d{2}$/;
-      if (!phoneRegex.test(client.phone)) {
-        toast.error('Пожалуйста, введите корректный российский номер телефона!');
+
+      let error = '';
+      if (!name || !phone || !address) error = 'Пожалуйста, заполните все обязательные поля!';
+      else if (!cyrillicRegex.test(name)) error = 'Имя должно содержать только русские буквы!';
+      else if (digits.length < 11) error = 'Пожалуйста, введите полный номер телефона!';
+      else if (!phoneRegex.test(phone)) error = 'Пожалуйста, введите корректный российский номер телефона!';
+
+      if (error) {
+        if (!toast.isActive('step-error')) {
+          toast.error(error, { toastId: 'step-error' });
+        }
         return;
       }
     }
 
-    if (step < steps.length - 1) {
-      setStep(step + 1);
-    }
+    if (step < steps.length - 1) setStep(step + 1);
   };
 
   const prevStep = () => {
@@ -183,7 +176,7 @@ const Stepper: React.FC<StepperProps> = ({isOpen, onClose}) => {
         </Flex>
 
         {cart.length === 0 ? (
-          <Text color="black">Корзина пуста</Text>
+          <Text color="black">Корзина пуста :(</Text>
         ) : (
           <>
             <Steps.Root step={step} count={steps.length}>
@@ -214,7 +207,7 @@ const Stepper: React.FC<StepperProps> = ({isOpen, onClose}) => {
                       <Heading size="sm" color="black" mb={1}>{item.name}</Heading>
                       {item.extras && item.extras.length > 0 && (
                         <Text fontSize="sm" color="gray.500">
-                          Дополнительно: {item.extras.map((extra: Extra) => extra.name).join(', ')}
+                          Дополнительно: {item.extras.map((extra: Extra) => extra.name + ' x ' + extra.count).join(', ')}
                         </Text>
                       )}
                     </Box>
@@ -258,7 +251,7 @@ const Stepper: React.FC<StepperProps> = ({isOpen, onClose}) => {
                     <Text fontWeight="bold">{item.name}</Text>
                     {item.extras && item.extras.length > 0 && (
                       <Text fontSize="sm" color="gray.600">
-                        Дополнительно: {item.extras.map((extra: Extra) => extra.name).join(', ')}
+                        Дополнительно: {item.extras.map((extra: Extra) => extra.name + ' x ' + extra.count).join(', ')}
                       </Text>
                     )}
                     <Text fontSize="sm" color="gray.600">Цена: {item.totalPrice} руб</Text>
@@ -293,9 +286,9 @@ const Stepper: React.FC<StepperProps> = ({isOpen, onClose}) => {
                   </Button>
 
                   <Button
-                    bg="green.400"
+                    bg="green.700"
                     color="white"
-                    _hover={{ bg: 'green.500' }}
+                    _hover={{ bg: 'green.600' }}
                     borderRadius="md"
                     onClick={confirmOrder}
                   >
