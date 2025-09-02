@@ -23,6 +23,7 @@ const PizzasBlock = () => {
   const [selectedPizza, setSelectedPizza] = useState<Pizza | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [extrasCount, setExtrasCount] = useState<Record<string, number>>({});
+  const [extrasChecked, setExtrasChecked] = useState<Record<string, boolean>>({});
 
   const handleAddToCart = (pizza: Pizza) => {
     setSelectedPizza(pizza);
@@ -73,10 +74,24 @@ const PizzasBlock = () => {
   };
 
   const changeExtrasCount = (name: string, sumExtra: number) => {
-    setExtrasCount(prevState => ({
-      ...prevState,
-      [name]: Math.max(0, (prevState[name] || 0) + sumExtra),
-    }));
+    setExtrasCount(prevState => {
+      const newCount = Math.max(0, (prevState[name] || 0) + sumExtra);
+      return {
+        ...prevState,
+        [name]: newCount,
+      };
+    });
+
+    if (sumExtra > 0) {
+      setExtrasChecked(prev => ({ ...prev, [name]: true }));
+    }
+
+    if (sumExtra < 0) {
+      const newCount = Math.max(0, (extrasCount[name] || 0) + sumExtra);
+      if (newCount === 0) {
+        setExtrasChecked(prev => ({ ...prev, [name]: false }));
+      }
+    }
   };
 
   const totalPrice = selectedPizza
@@ -124,36 +139,29 @@ const PizzasBlock = () => {
                   <VStack align="start" mt={2}>
                     {selectedPizza.extras.map(extra => {
                       const count = extrasCount[extra.name] || 0;
+                      const checked = extrasChecked[extra.name] ?? false;
+
                       return (
                         <HStack key={extra.name} justifyContent="space-between" w="100%">
                           <Checkbox.Root
-                            checked={count > 0}
-                            onCheckedChange={checked => {
-                              setExtrasCount(prev => {
-                                if (checked) {
-                                  return {...prev, [extra.name]: prev[extra.name] || 1};
-                                } else {
-                                  const newState = {...prev};
-                                  newState[extra.name] = 0;
-                                  return newState;
-                                }
-                              });
+                            checked={checked}
+                            onCheckedChange={(isChecked) => {
+                              setExtrasChecked(prev => ({ ...prev, [extra.name]: !!isChecked }));
+                              setExtrasCount(prev => ({
+                                ...prev,
+                                [extra.name]: isChecked ? prev[extra.name] || 1 : 0
+                              }));
                             }}
-                            css={{flex: 1}}
+                            css={{ flex: 1 }}
                           >
-                            <Checkbox.HiddenInput/>
-                            <Checkbox.Control/>
-                            <Checkbox.Label fontSize={{base: 14, sm: 15}} ml={2} whiteSpace="normal">
+                            <Checkbox.HiddenInput />
+                            <Checkbox.Control />
+                            <Checkbox.Label fontSize={{ base: 14, sm: 15 }} ml={2} whiteSpace="normal">
                               {extra.name} - {extra.price} руб
                             </Checkbox.Label>
                           </Checkbox.Root>
 
-                          <NumberInput.Root
-                            value={String(count)}
-                            min={0}
-                            unstyled
-                            spinOnPress={false}
-                          >
+                          <NumberInput.Root value={String(count)} min={0} unstyled spinOnPress={false}>
                             <HStack gap="2">
                               <NumberInput.DecrementTrigger asChild>
                                 <IconButton
@@ -161,11 +169,11 @@ const PizzasBlock = () => {
                                   size="sm"
                                   onClick={() => changeExtrasCount(extra.name, -1)}
                                 >
-                                  <LuMinus/>
+                                  <LuMinus />
                                 </IconButton>
                               </NumberInput.DecrementTrigger>
 
-                              <NumberInput.ValueText textAlign="center" fontSize="lg" minW="3ch"/>
+                              <NumberInput.ValueText textAlign="center" fontSize="lg" minW="3ch" />
 
                               <NumberInput.IncrementTrigger asChild>
                                 <IconButton
@@ -173,7 +181,7 @@ const PizzasBlock = () => {
                                   size="sm"
                                   onClick={() => changeExtrasCount(extra.name, 1)}
                                 >
-                                  <LuPlus/>
+                                  <LuPlus />
                                 </IconButton>
                               </NumberInput.IncrementTrigger>
                             </HStack>
