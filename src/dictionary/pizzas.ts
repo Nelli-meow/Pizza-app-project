@@ -1,4 +1,4 @@
-import pizzaImg from '../../public/assets/img/domashnyaya-pitstsa_11.jpg';
+import pizzaImg from '../assets/img/domashnyaya-pitstsa_11.jpg';
 
 export interface Extra {
   name: string;
